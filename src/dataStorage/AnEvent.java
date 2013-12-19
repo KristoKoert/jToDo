@@ -25,6 +25,6 @@ public class AnEvent extends Deadline {
      */
     @Override
     public String toString() {
-        return name + " " + time + " " + date;
+        return name + "|" + time + "|" + date + "|\n";
     }
 }

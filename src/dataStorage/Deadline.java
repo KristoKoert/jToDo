@@ -33,6 +33,6 @@ public class Deadline {
      */
     @Override
     public String toString() {
-        return name + ' ' + date;
+        return name + '|' + date + "|\n";
     }
 }

@@ -1,16 +1,12 @@
 package dataStorage;
 
-import java.util.ArrayList;
+import java.util.*;
+import java.io.*;
 
-/**
- * @author Kristo Koert
- * @version 1.0
- * @since 2013-11-29
- */
 public class FileConnector {
 
     /**
-     * Only one Connection item allowed at once, if true, Constructor fails
+     * Only one FileConnector item allowed at once, if true, Constructor fails
      */
     private static boolean isOpen = false;
     /**
@@ -21,6 +17,32 @@ public class FileConnector {
      * Path to the text file used as AnEvent objects data storage
      */
     private String eventPath;
+
+    /**
+     * <p>
+     * This is a small utility function. It takes in a longer String and splits it from the character splitter
+     * </p>
+     *
+     * @param word      A longer string, should contain splitter characters
+     * @param splitter  The character that designates a break point
+     * @return          An array of Strings of length 3
+     */
+    public String[] nSplit(String word, char splitter) {
+        String[] ret = new String[3];
+        int oldindx = 0;
+        int indx = 0;
+        int i = 0;
+
+        for(char c : word.toCharArray()) {
+            indx++;
+            if (c == splitter) {
+                ret[i] = word.substring(oldindx, indx - 1);
+                oldindx = indx;
+                i++;
+            }
+        }
+        return ret;
+    }
 
     /**
      * FileConnector constructor
@@ -37,12 +59,13 @@ public class FileConnector {
         }
         isOpen = true;
         //ToDo Search for files
+        deadLPath = "C:\\Users\\Kris\\Desktop\\WedDec4\\WedDec4\\IdeaProjects\\jToDo\\src\\dataStorage\\DeadlineData";
+        eventPath = "C:\\Users\\Kris\\Desktop\\WedDec4\\WedDec4\\IdeaProjects\\jToDo\\src\\dataStorage\\EventData";
     }
 
     /**
      * Write a String to a text file specified by path.
      * <p>
-     * <p/>
      * The String is a representation of either an AnEvent or Deadline object.
      * The String is in the format specified by {@link AnEvent)} and {@link Deadline} toString() methods.
      * Will be written on a new line.
@@ -52,21 +75,93 @@ public class FileConnector {
      * @param path   the path to a text file
      */
     private void writeToFile(String strRep, String path) {
-        //ToDo Write a String to a text file
+        //ToDo Write a String to a text file (Needs Testing)
+
+        FileOutputStream fos = null;
+        File file;
+
+        try {
+            //Get all current text into temp
+            String temp = "";
+            Scanner sc = new Scanner(new File(path));
+            while(sc.hasNextLine()) {
+                temp += sc.nextLine();
+            }
+            sc.close();
+
+            file = new File(path);
+            fos = new FileOutputStream(file);
+
+            // if file does not exists, then create it
+            if (!file.exists()) {
+                file.createNewFile();
+                System.out.println("File does not exist!");
+            }
+
+            // get the content in bytes
+            strRep = temp + strRep;
+            System.out.println("This is temp + strRep: " + strRep);
+            byte[] contentInBytes = strRep.getBytes();
+
+            fos.write(contentInBytes);
+            fos.flush();
+            fos.close();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (fos != null) {
+                    fos.close();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     /**
-     * Remove a String from a text file specified by path.
+     * Remove a line with the specified String in it from a text file specified by path.
      * <p>
-     * The String is a representation of either an AnEvent or Deadline object.
-     * The String is in the format specified by {@link AnEvent)} and {@link Deadline} toString() methods.
+     * The String the name of either an AnEvent or Deadline object.
+     * The data is actually stored in a temporary storage, all except for the specified line and then
+     * rewritten to the same file
      * </p>
      *
-     * @param strRep the data representation
-     * @param path   the path to a text file
+     * @param name  the data representation
+     * @param path  the path to a text file
      */
-    private void removeFromFile(String strRep, String path) {
-        //ToDo remove a String from a text file
+    private void removeFromFile(String name, String path) {
+        //ToDo remove a String from a text file, (Needs testing)
+        String temp = "";
+        String line;
+        try {
+            Scanner reader = new Scanner(new File(path));
+            // Store all data except specified line in temp
+            while (reader.hasNextLine()) {
+                line = reader.nextLine();
+                System.out.println("A line: " + line);
+                if (!line.contains(name)) {
+                    temp += line + "\n";
+                    System.out.println("So add to temp: " + temp);
+                }
+            }
+            reader.close();
+            System.out.println("temp ready: " + "\n" + temp);
+
+            //Empty out file beforehand
+            try {
+                PrintWriter writer = new PrintWriter(new File(path));
+                writer.print("");
+                writer.close();
+            } catch(FileNotFoundException e) {
+                System.out.println("File not found!");
+            }
+            writeToFile(temp, path);
+            //System.out.println("Such an item does not exist!");
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -75,9 +170,25 @@ public class FileConnector {
      *
      * @return an ArrayList of Event objects
      */
-    private ArrayList<AnEvent> getEvents() {
+    public ArrayList<AnEvent> getEvents() {
         ArrayList<AnEvent> events = new ArrayList<AnEvent>();
-        //ToDo create AnEvent objects from text file lines
+        //A Deadline object takes two arguments, they will be collected in here
+        String[] parameters = new String[3];
+        //ToDo create AnEvent objects from text file lines, (Needs testing)
+        try {
+
+            Scanner reader = new Scanner(new File(eventPath));
+
+            while (reader.hasNextLine()) {
+                //The parameters are already nSplit with "|" characters in the text file
+                parameters = nSplit(reader.nextLine(), '|');
+
+                events.add(new AnEvent(parameters[0], parameters[1], parameters[2]));
+            }
+            reader.close();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
         return events;
     }
 
@@ -87,9 +198,24 @@ public class FileConnector {
      *
      * @return an ArrayList of Deadline objects
      */
-    private ArrayList<Deadline> getDeadlines() {
+    public ArrayList<Deadline> getDeadlines() {
         ArrayList<Deadline> deadlines = new ArrayList<Deadline>();
-        //ToDo create Deadline objects from text file lines
+        //A Deadline object takes two arguments, they will be collected in here
+        String[] parameters = new String[3];
+        //ToDo create Deadline objects from text file lines, (Needs testing)
+        try {
+
+            Scanner reader = new Scanner(new File(deadLPath));
+
+            while (reader.hasNextLine()) {
+                //The parameters are already split with "|" characters in the text file
+                parameters = nSplit(reader.nextLine(), '|');
+                deadlines.add(new Deadline(parameters[0], parameters[1]));
+            }
+            reader.close();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
         return deadlines;
     }
 
@@ -117,6 +243,29 @@ public class FileConnector {
     }
 
     /**
+     * Writes a representation of a Deadline or AnEvent object to deadLPath or eventPath respectively
+     * <p>
+     * The format of the data reflects Deadline or AnEvent class constructor arguments separated
+     * by whitespaces and arranged in order of the constructor arguments.
+     * </p>
+     *
+     * @param someOccasion a Deadline or Event object
+     */
+    public void storeData(Deadline someOccasion) {
+        String path;
+        String stringRep;
+        //ToDo Inheritance?
+        if (someOccasion.getClass() == AnEvent.class) {
+            stringRep = someOccasion.toString();
+            path = eventPath;
+        } else {
+            stringRep = someOccasion.toString();
+            path = deadLPath;
+        }
+        writeToFile(stringRep, path);
+    }
+
+    /**
      * This method gets all the Data that is represented in both {@link #deadLPath} and
      * {@link #eventPath} files.
      * <p>
@@ -126,7 +275,7 @@ public class FileConnector {
      *
      * @return an array of length 2 that contains ArrayLists, first element is Deadlines and second Events.
      */
-    public ArrayList[] getData() {
+    public ArrayList[] getAllData() {
         ArrayList[] data = new ArrayList[2];
         data[0] = getDeadlines();
         data[1] = getEvents();
@@ -136,24 +285,33 @@ public class FileConnector {
     /**
      * This method removes an AnEvent or Deadline from data storage
      * <p>
-     * If a representation of such an object is not found in data storage,
+     * If such a name is not found in data storage,
      * issues a warning and does nothing.
      * </p>
      *
-     * @param someOccasion
+     * @param name The name of an event or deadline
+     * @param type The type of object, either "deadline" or "event"
      */
-    public void removeData(AnEvent someOccasion) {
-        String path;
-        String stringRep;
-
-        if (someOccasion.getClass() == AnEvent.class) {
-            stringRep = someOccasion.toString();
-            path = eventPath;
-        } else {
-            stringRep = someOccasion.toString();
-            path = deadLPath;
+    public void removeData(String name, String type) {
+        if (type.equals("deadline")) {
+            removeFromFile(name, deadLPath);
         }
-        removeFromFile(stringRep, path);
+        else if (type.equals("event")) {
+            removeFromFile(name, eventPath);
+        }
+    }
+
+    public void removeAll() {
+        try {
+            PrintWriter writer = new PrintWriter(new File(eventPath));
+            writer.print("");
+            writer.close();
+            writer = new PrintWriter(new File(deadLPath));
+            writer.print("");
+            writer.close();
+        } catch(FileNotFoundException e) {
+            System.out.println("File not found!");
+        }
     }
 
     /**

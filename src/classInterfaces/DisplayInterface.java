@@ -1,5 +1,9 @@
 package classInterfaces;
 
+import com.sun.org.apache.bcel.internal.generic.ANEWARRAY;
+import dataStorage.AnEvent;
+import dataStorage.Deadline;
+
 import java.util.ArrayList;
 
 public interface DisplayInterface {
@@ -16,20 +20,20 @@ public interface DisplayInterface {
 
     /**
      * Brings up UI for displaying all Data
-     * @param d display Events/Deadlines that are less than d days away
+     * @param data all data
      */
-    public void displayAll(ArrayList[] data, int d);
+    public void displayAll(ArrayList[] data);
 
     /**
      * Brings up UI for displaying Deadlines
-     * @param d display Deadlines that are less than d days away
+     * @param data all deadlines
      */
-    public void displayDeadlines(ArrayList[] data, int d);
+    public void displayDeadlines(ArrayList<Deadline> data);
 
     /**
      * Brings up UI for displaying Events
-     * @param d display Events that are less than d days away
+     * @param data all events
      */
-    public void displayEvents(ArrayList[] data, int d);
+    public void displayEvents(ArrayList<AnEvent> data);
 
 }

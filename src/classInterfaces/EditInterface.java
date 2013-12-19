@@ -8,7 +8,7 @@ import dataStorage.Deadline;
  * @version 1.0
  * @since 2013-11-30
  */
-public interface InputInterface {
+public interface EditInterface {
 
     /**
      * Brings up the UI with witch a new Deadline instance can be created
