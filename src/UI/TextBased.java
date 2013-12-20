@@ -33,11 +33,6 @@ public class TextBased implements DisplayInterface, EditInterface {
     ArrayList<String> screen = new ArrayList<String>();
 
     /**
-     * Gets all user input
-     */
-    Scanner input = new Scanner(System.in);
-
-    /**
      * Deals with data transfer
      */
     FileConnector fileCon = new FileConnector();
@@ -61,8 +56,10 @@ public class TextBased implements DisplayInterface, EditInterface {
         screen.add("Commands   : -v : view, -a : add, -r : remove\n\n");
         screen.add("Parameters : all, deadline, event\n\n");
         screen.add("Example    : \'-v all\' to view all.\n\n");
+        screen.add("Quit: -q\n\n");
         //And ends.
         // The Scanner.next method will supply both the command and parameter string
+        Scanner input = new Scanner(System.in);
         String command;
         String param;
         while (true) {
@@ -70,8 +67,11 @@ public class TextBased implements DisplayInterface, EditInterface {
             for (String l : screen) {
                 System.out.print(l);
             }
-            System.out.print("Input: ");
+            System.out.print("$: ");
             command = input.next().toLowerCase();
+            if(command.equals("-q")) {
+                break;
+            }
             param = input.next().toLowerCase();
             //If view command entered
             if (command.equals("-v")) {
@@ -117,62 +117,73 @@ public class TextBased implements DisplayInterface, EditInterface {
                 }
                 else try {
                         System.out.println("Invalid input!");
-                        Thread.sleep(500);
+                        Thread.sleep(750);
                     } catch (InterruptedException e) {
                 }
             }
             else try {
                 System.out.println("Invalid input!");
-                Thread.sleep(500);
+                Thread.sleep(750);
             } catch (InterruptedException e) {
             }
         }
+        System.out.println("Have a good day!");
     }
 
     public void displayAll(ArrayList[] data) {
         ArrayList<Deadline> deadlines = data[0];
         ArrayList<AnEvent> events = data[1];
 
-        System.out.println("Upcoming Events   :");
+        System.out.println("Upcoming Events: \n");
         for (Deadline occ : events) {
             System.out.println(occ);
         }
 
-        System.out.println("Upcoming Deadlines :");
+        System.out.println("Upcoming Deadlines: \n");
         for (Deadline occ : deadlines) {
             System.out.println(occ);
         }
-
-        System.out.print("Enter any character to continue.. ");
-        input.next();
+        System.out.print("Done viewing? (y)");
+        while(!new Scanner(System.in).next().equals("y")) {
+            System.out.print("Done viewing? (y)");
+        }
     }
 
     public void displayEvents(ArrayList<AnEvent> data) {
-        System.out.println("Upcoming Events: ");
+        System.out.println("Upcoming Events: \n");
         for (AnEvent ev: data) {
             System.out.println(ev);
         }
-        System.out.print("Enter any character to continue.. ");
-        input.next();
+        System.out.print("Done viewing? (y)");
+        while(!new Scanner(System.in).next().equals("y")) {
+            System.out.print("Done viewing? (y)");
+        }
     }
 
     public void displayDeadlines(ArrayList<Deadline> data) {
-        System.out.println("Upcoming Deadlines: ");
+        System.out.println("Upcoming Deadlines: \n");
         for (Deadline dl: data) {
             System.out.println(dl);
         }
-        System.out.print("Enter any character to continue.. ");
-        input.next();
+        System.out.print("Done viewing? (y)");
+        while(!new Scanner(System.in).next().equals("y")) {
+            System.out.print("Done viewing? (y)");
+        }
     }
 
+    /**
+     * Ask user to input information for the creation of a Deadline object
+     *
+     * @return a new Deadline object
+     */
     public Deadline addNewDeadline() {
-        //ToDo Implement addNewDeadlines
         String name;
         String date;
+
         System.out.print("Enter a name for a deadline: ");
-        name = input.next();
+        name = new Scanner(System.in).next();
         System.out.print("Enter a date (ex. 12.31.13): ");
-        date = input.next();
+        date = new Scanner(System.in).next();
         //ToDo Figure out a failsafe
         if(date.length() != 8) {
             return addNewDeadline();
@@ -180,40 +191,49 @@ public class TextBased implements DisplayInterface, EditInterface {
         return new Deadline(name, date);
     }
 
+    /**
+     * Ask user to input information for the creation of an AnEvent object
+     *
+     * @return a new AnEvent object
+     */
     public AnEvent addNewEvent() {
-        //ToDo Implement addNewEvent
         String name;
         String time;
         String date;
+        //ToDo add a cancel possibility
+        System.out.println("-Event creation-");
         System.out.print("Enter a name for the event : ");
-        name = input.next();
+        name = new Scanner(System.in).next();
         System.out.print("Enter a time (ex. 24:60)   : ");
-        time = input.next();
+        time = new Scanner(System.in).next();
         System.out.print("Enter a date (ex. 12.31.13): ");
-        date = input.next();
+        date = new Scanner(System.in).next();
         //ToDo Figure out a failsafe
         if(date.length() != 8 || time.length() != 5) {
             return addNewEvent();
         }
-        if(date == null) {
-            System.out.println("!!!!");
-        }
         return new AnEvent(name, time, date);
     }
 
+    /**
+     * This method asks the user to enter a String that should be the name of a Deadline object,
+     * if it is found, will be removed.
+     */
     public void removeDeadline() {
-        //ToDo Implement removeDeadline
         String name;
         System.out.println("Enter the name of the deadline: ");
-        name = input.next();
+        name = new Scanner(System.in).next();
         fileCon.removeData(name, "deadline");
     }
 
+    /**
+     * This method asks the user to enter a String that should be the name of an AnEvent object,
+     * if it is found, will be removed.
+     */
     public void removeEvent() {
-        //ToDo Implement removeEvent
         String name;
         System.out.println("Enter the name of the event: ");
-        name = input.next();
+        name = new Scanner(System.in).next();
         fileCon.removeData(name, "event");
     }
 }

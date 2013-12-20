@@ -3,11 +3,6 @@ package classInterfaces;
 import dataStorage.AnEvent;
 import dataStorage.Deadline;
 
-/**
- * @author Kristo Koert
- * @version 1.0
- * @since 2013-11-30
- */
 public interface EditInterface {
 
     /**

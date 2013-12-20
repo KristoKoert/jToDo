@@ -20,28 +20,28 @@ public class FileConnector {
 
     /**
      * <p>
-     * This is a small utility function. It takes in a longer String and splits it from the character splitter
+     * This is a small utility function. It takes in a longer String and splits it from the character splitter points
      * </p>
      *
-     * @param word      A longer string, should contain splitter characters
+     * @param word      A longer string, should contain 2-3 splitter characters
      * @param splitter  The character that designates a break point
      * @return          An array of Strings of length 3
      */
     public String[] nSplit(String word, char splitter) {
-        String[] ret = new String[3];
-        int oldindx = 0;
+        String[] arr = new String[3];
+        int oldIndx = 0;
         int indx = 0;
-        int i = 0;
+        int arrIndx = 0;
 
         for(char c : word.toCharArray()) {
             indx++;
             if (c == splitter) {
-                ret[i] = word.substring(oldindx, indx - 1);
-                oldindx = indx;
-                i++;
+                arr[arrIndx] = word.substring(oldIndx, indx - 1);
+                oldIndx = indx;
+                arrIndx++;
             }
         }
-        return ret;
+        return arr;
     }
 
     /**
@@ -55,7 +55,7 @@ public class FileConnector {
         try {
             assert (isOpen == false);
         } catch (AssertionError a) {
-            System.out.println("Only one instance of FileConnector allowed.");
+            System.out.println("Only one instance of FileConnector allowed!");
         }
         isOpen = true;
         //ToDo Search for files
@@ -75,8 +75,6 @@ public class FileConnector {
      * @param path   the path to a text file
      */
     private void writeToFile(String strRep, String path) {
-        //ToDo Write a String to a text file (Needs Testing)
-
         FileOutputStream fos = null;
         File file;
 
@@ -85,23 +83,22 @@ public class FileConnector {
             String temp = "";
             Scanner sc = new Scanner(new File(path));
             while(sc.hasNextLine()) {
-                temp += sc.nextLine();
+                temp += sc.nextLine() + '\n';
             }
             sc.close();
 
             file = new File(path);
             fos = new FileOutputStream(file);
 
+            //Todo new file creation
             // if file does not exists, then create it
             if (!file.exists()) {
                 file.createNewFile();
-                System.out.println("File does not exist!");
             }
 
             // get the content in bytes
-            strRep = temp + strRep;
-            System.out.println("This is temp + strRep: " + strRep);
-            byte[] contentInBytes = strRep.getBytes();
+            temp = temp + strRep;
+            byte[] contentInBytes = temp.getBytes();
 
             fos.write(contentInBytes);
             fos.flush();
@@ -123,31 +120,34 @@ public class FileConnector {
     /**
      * Remove a line with the specified String in it from a text file specified by path.
      * <p>
-     * The String the name of either an AnEvent or Deadline object.
+     * The name of either an AnEvent or Deadline object.
      * The data is actually stored in a temporary storage, all except for the specified line and then
      * rewritten to the same file
      * </p>
      *
-     * @param name  the data representation
+     * @param name  the name of an AnEvent or Deadline object
      * @param path  the path to a text file
      */
     private void removeFromFile(String name, String path) {
-        //ToDo remove a String from a text file, (Needs testing)
         String temp = "";
         String line;
+        boolean found = false;
+
         try {
+
             Scanner reader = new Scanner(new File(path));
             // Store all data except specified line in temp
             while (reader.hasNextLine()) {
                 line = reader.nextLine();
-                System.out.println("A line: " + line);
+                // If the name line does not contain the name, it is appended with a newline character
                 if (!line.contains(name)) {
                     temp += line + "\n";
-                    System.out.println("So add to temp: " + temp);
+                } else {
+                    //If it is found at all
+                    found = true;
                 }
             }
             reader.close();
-            System.out.println("temp ready: " + "\n" + temp);
 
             //Empty out file beforehand
             try {
@@ -157,8 +157,12 @@ public class FileConnector {
             } catch(FileNotFoundException e) {
                 System.out.println("File not found!");
             }
+
             writeToFile(temp, path);
-            //System.out.println("Such an item does not exist!");
+
+            if(!found) {
+                System.out.println("Such an item does not exist!");
+            }
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
@@ -172,17 +176,14 @@ public class FileConnector {
      */
     public ArrayList<AnEvent> getEvents() {
         ArrayList<AnEvent> events = new ArrayList<AnEvent>();
-        //A Deadline object takes two arguments, they will be collected in here
+        //An AnEvent object takes three arguments, they will be collected in here
         String[] parameters = new String[3];
-        //ToDo create AnEvent objects from text file lines, (Needs testing)
         try {
 
             Scanner reader = new Scanner(new File(eventPath));
 
             while (reader.hasNextLine()) {
-                //The parameters are already nSplit with "|" characters in the text file
                 parameters = nSplit(reader.nextLine(), '|');
-
                 events.add(new AnEvent(parameters[0], parameters[1], parameters[2]));
             }
             reader.close();
@@ -202,13 +203,12 @@ public class FileConnector {
         ArrayList<Deadline> deadlines = new ArrayList<Deadline>();
         //A Deadline object takes two arguments, they will be collected in here
         String[] parameters = new String[3];
-        //ToDo create Deadline objects from text file lines, (Needs testing)
+
         try {
 
             Scanner reader = new Scanner(new File(deadLPath));
 
             while (reader.hasNextLine()) {
-                //The parameters are already split with "|" characters in the text file
                 parameters = nSplit(reader.nextLine(), '|');
                 deadlines.add(new Deadline(parameters[0], parameters[1]));
             }
@@ -231,7 +231,7 @@ public class FileConnector {
     public void storeData(AnEvent someOccasion) {
         String path;
         String stringRep;
-
+        //ToDo Inheritance?
         if (someOccasion.getClass() == AnEvent.class) {
             stringRep = someOccasion.toString();
             path = eventPath;
